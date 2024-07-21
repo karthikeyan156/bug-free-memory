@@ -8,7 +8,9 @@ from dotenv import load_dotenv
 load_dotenv()  # take environment variables from .env.
 
 # Configure Google Generative AI
-genai.configure(api_key=os.getenv("GOOGLE_API_KEY"))
+api_key = os.getenv("GOOGLE_API_KEY")
+print("API Key:", api_key)
+genai.configure(api_key=api_key)
 
 # Function to convert text to Markdown format
 def to_markdown(text):
@@ -16,14 +18,27 @@ def to_markdown(text):
     return text
 
 # Function to get response from Gemini model
-def get_gemini_response(input, pdf_content=None, prompt=None):
-    if pdf_content:
-        model = genai.GenerativeModel('gemini-pro-vision')
-        response = model.generate_content([input, pdf_content[0], prompt])
-    else:
-        model = genai.GenerativeModel('gemini-pro')
-        response = model.generate_content(input)
-    return response.text
+def get_gemini_response(input_text, pdf_content=None, prompt=None):
+    try:
+        if not input_text:
+            raise ValueError("Input text must not be empty")
+
+        if pdf_content:
+            model = genai.GenerativeModel('gemini-pro-vision')
+            response = model.generate_content([input_text, pdf_content[0], prompt])
+        else:
+            model = genai.GenerativeModel('gemini-pro')
+            response = model.generate_content(input_text)
+        return response.text
+    except ValueError as ve:
+        print(f"ValueError: {ve}")
+        return f"Error: {ve}"
+    except TypeError as te:
+        print(f"TypeError: {te}")
+        return f"Error: {te}"
+    except Exception as e:
+        print(f"Exception: {e}")
+        return f"Error generating content: {e}"
 
 # Function to extract text from PDF
 def input_pdf_text(uploaded_file):
@@ -74,11 +89,13 @@ with tab1:
 
     # If ask button is clicked
     if submit:
-        with st.spinner("Generating response..."):
-            response = get_gemini_response(input_text)
-        
-        st.markdown("<h2 style='color: #4CAF50;'>The Response:</h2>", unsafe_allow_html=True)
-        st.success(response)
+        if input_text.strip():
+            with st.spinner("Generating response..."):
+                response = get_gemini_response(input_text)
+            st.markdown("<h2 style='color: #4CAF50;'>The Response:</h2>", unsafe_allow_html=True)
+            st.success(response)
+        else:
+            st.error("Please enter a question.")
 
 with tab2:
     # Input section for ATS Resume Expert
@@ -93,13 +110,16 @@ with tab2:
     submit = st.button("Submit")
 
     if submit:
-        if uploaded_file is not None:
+        if uploaded_file is not None and jd.strip():
             text = input_pdf_text(uploaded_file)
-            response = get_gemini_response(input_prompt.format(text=text, jd=jd))
-            st.subheader("The Response is")
-            st.write(response)
+            if text.strip():
+                response = get_gemini_response(input_prompt.format(text=text, jd=jd))
+                st.subheader("The Response is")
+                st.write(response)
+            else:
+                st.error("Extracted text from PDF is empty.")
         else:
-            st.write("Please upload the resume")
+            st.error("Please upload the resume and ensure the job description is not empty.")
 
 # Add a sidebar with project overview and key features
 st.sidebar.title("Project Overview")

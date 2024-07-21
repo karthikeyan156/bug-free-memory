@@ -1,4 +1,5 @@
 streamlit
-google-generativeai
+google-generative-ai
 PyPDF2
 python-dotenv
+IPython

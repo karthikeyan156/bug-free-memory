@@ -3,9 +3,6 @@ import google.generativeai as genai
 import os
 import PyPDF2 as pdf
 from dotenv import load_dotenv
-import textwrap
-from IPython.display import display
-from IPython.display import Markdown
 
 # Load environment variables
 load_dotenv()  # take environment variables from .env.
@@ -16,7 +13,7 @@ genai.configure(api_key=os.getenv("GOOGLE_API_KEY"))
 # Function to convert text to Markdown format
 def to_markdown(text):
     text = text.replace('•', '  *')
-    return Markdown(textwrap.indent(text, '> ', predicate=lambda _: True))
+    return text
 
 # Function to get response from Gemini model
 def get_gemini_response(input, pdf_content=None, prompt=None):

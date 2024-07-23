@@ -3,3 +3,6 @@ google-generativeai
 PyPDF2
 python-dotenv
 IPython
+bs4
+time
+selenium

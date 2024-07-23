@@ -95,7 +95,7 @@ def extract_job_description_and_company(driver, job_link):
  
 def scrape_jobs(skill_name, location, num_pages=1):
     job_data = []
-    client = MongoClient('mongodb://localhost:27017')
+    client = MongoClient('mongodb+srv://DbUser:<password>@restaurantdb.ih0rfwo.mongodb.net/?retryWrites=true&w=majority&appName=RestaurantDb')
     db = client['job_database']
     collection = db['jobs']
     collection.create_index([('Job ID', 1)], unique=True)

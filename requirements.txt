@@ -5,4 +5,4 @@ python-dotenv
 IPython
 bs4
 selenium
-mongoclient
+pymongo

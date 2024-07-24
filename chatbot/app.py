@@ -203,18 +203,20 @@ st.sidebar.info("""
 
 3. **Explainable AI:**
    - Developed with best practices in explainable AI to ensure transparency and trust.
-   - Provides clear explanations for its recommendations, allowingTo connect your Streamlit application to a MongoDB Atlas server, you need to ensure that you securely manage your MongoDB credentials and correctly set up the connection string. Here’s the modified section of your code that establishes the MongoDB connection using the `pymongo` library and incorporates best practices for handling sensitive information:
+   - Provides clear explanations for its recommendations, allowing users to understand and evaluate their future career evolution and options.
 
-### Code Modifications
+4. **Data-Driven Insights:**
+   - Trained on survey data, market trends, and stakeholder inputs.
+   - Adaptable to gender considerations, present and future job market needs, and STEM/non-STEM profiles.
 
-```python
-from pymongo import MongoClient, errors
+5. **Interactive and Adaptive:**
+   - The chatbot will ask targeted questions to understand the user's background, expectations, and needs.
+   - Adapts its recommendations based on the user's input, providing a tailored program for both students and professionals.
 
-# MongoDB connection details
-# Replace '<password>' with your actual MongoDB Atlas password and <dbname> with your database name.
-# Ensure the connection URI is securely stored and not hard-coded in your script.
-mongo_uri = os.getenv('MONGO_URI')  # Ensure this environment variable is set correctly
-
+6. **Career Guidance:**
+   - Guides users in choosing the appropriate educational structure depending on their expertise and career stage.
+   - Helps professionals assess their current skill set and suggests improvements for career advancement.
+""")
 # Function to connect to MongoDB
 def connect_to_mongo(uri):
     try:

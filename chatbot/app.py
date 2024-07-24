@@ -95,10 +95,10 @@ def extract_job_description_and_company(driver, job_link):
  
 def scrape_jobs(skill_name, location, num_pages=1):
     job_data = []
-    client = MongoClient('mongodb://localhost:27017')
-    db = client['job_database']
-    collection = db['jobs']
-    collection.create_index([('Job ID', 1)], unique=True)
+    #client = MongoClient('mongodb://localhost:27017')
+    #db = client['job_database']
+    #collection = db['jobs']
+    #collection.create_index([('Job ID', 1)], unique=True)
     for page in range(num_pages):
         soup = extract_site(site="indeed", skill_name=skill_name, location=location, num_page=page)
         job_cards_div = soup.find("div", attrs={"id": "mosaic-provider-jobcards"})
@@ -129,11 +129,11 @@ def scrape_jobs(skill_name, location, num_pages=1):
                     })
         else:
             print("No job cards found on this page.")
-    if job_data:
-        try:
-            collection.insert_many(job_data, ordered=False)
-        except Exception as e:
-            print(f"Error inserting data into MongoDB: {e}")
+    #if job_data:
+    #    try:
+     #       collection.insert_many(job_data, ordered=False)
+    #    except Exception as e:
+     #       print(f"Error inserting data into MongoDB: {e}")
     return job_data
  
 # Streamlit UI

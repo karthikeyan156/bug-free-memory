@@ -97,7 +97,7 @@ def extract_job_description_and_company(driver, job_link):
 def scrape_jobs(skill_name, location, num_pages=1):
     job_data = []
     # MongoDB connection details (Replace <password> with your actual password)
-    client = MongoClient(os.getenv('MONGO_URI'))
+    client = MongoClient("mongodb+srv://DbUser:DbUser@restaurantdb.ih0rfwo.mongodb.net/?retryWrites=true&w=majority&appName=RestaurantDb")
     db = client['job_database']
     collection = db['jobs']
     collection.create_index([('Job ID', 1)], unique=True)
@@ -228,7 +228,7 @@ def connect_to_mongo(uri):
         return None
 
 # Connect to MongoDB Atlas
-db = connect_to_mongo(os.getenv('MONGO_URI'))
+db = connect_to_mongo("mongodb+srv://DbUser:DbUser@restaurantdb.ih0rfwo.mongodb.net/?retryWrites=true&w=majority&appName=RestaurantDb")
 if db:
     collection = db['jobs']
     collection.create_index([('Job ID', 1)], unique=True)

@@ -228,7 +228,7 @@ def connect_to_mongo(uri):
         return None
 
 # Connect to MongoDB Atlas
-db = connect_to_mongo(mongo_uri)
+db = connect_to_mongo(os.getenv('MONGO_URI'))
 if db:
     collection = db['jobs']
     collection.create_index([('Job ID', 1)], unique=True)

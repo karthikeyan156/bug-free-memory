@@ -10,7 +10,7 @@ import requests
 
 # Load environment variables
 load_dotenv()  # take environment variables from .env.
-Print("loading env")
+
 # Configure Google Generative AI
 genai.configure(api_key=os.getenv("GOOGLE_API_KEY"))
 Print("configiring env")

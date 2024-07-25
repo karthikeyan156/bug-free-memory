@@ -6,16 +6,14 @@ from dotenv import load_dotenv
 import textwrap
 from IPython.display import Markdown
 from bs4 import BeautifulSoup
-import time
-from selenium import webdriver
-from selenium.webdriver.chrome.options import Options
+import requests
 import json
 import urllib.parse
 from pymongo.mongo_client import MongoClient
 from pymongo.server_api import ServerApi
 
 # Load environment variables
-load_dotenv()  # take environment variables from .env.
+load_dotenv()
 
 # Configure Google Generative AI
 genai.configure(api_key=os.getenv("GOOGLE_API_KEY"))
@@ -81,74 +79,40 @@ URLS = {
 }
 
 def extract_site(site: str, skill_name: str, location="Ireland", num_page=0) -> BeautifulSoup:
-    options = Options()
-    options.add_argument('--headless')
-    options.add_argument(f"user-agent={HEADERS['User-Agent']}")
-    driver = webdriver.Chrome(options=options)
-    url = ""
-    if site == "indeed":
-        url = (
-            URLS[site]
-            + f"/jobs?q={skill_name.replace(' ', '+')}&l={location}&start={num_page * 10}"
-        )
-    driver.get(url)
-    time.sleep(5)  # Let the page load (adjust this time according to your needs)
-    soup = BeautifulSoup(driver.page_source, "html.parser")
-    driver.quit()  # Close the WebDriver after extracting the HTML
+    url = f"{URLS[site]}/jobs?q={skill_name.replace(' ', '+')}&l={location}&start={num_page * 10}"
+    response = requests.get(url, headers=HEADERS)
+    if response.status_code == 200:
+        soup = BeautifulSoup(response.content, "html.parser")
+    else:
+        soup = None
     return soup
-
-def extract_job_description_and_company(driver, job_link):
-    driver.get(job_link)
-    time.sleep(5)  # Let the page load
-    job_soup = BeautifulSoup(driver.page_source, "html.parser")
-    job_description_elem = job_soup.find("div", {"id": "jobDescriptionText"})
-    job_description = job_description_elem.text.strip() if job_description_elem else "N/A"
-    company_name_tag = job_soup.select_one('[data-testid="inlineHeader-companyName"] span a')
-    company_name = company_name_tag.text if company_name_tag else "N/A"
-    driver.quit()
-    return job_description, company_name
 
 def scrape_jobs(skill_name, location, num_pages=1):
     job_data = []
-    # client = MongoClient('mongodb://localhost:27017')
-    # db = client['job_database']
-    # collection = db['jobs']
-    # collection.create_index([('Job ID', 1)], unique=True)
     for page in range(num_pages):
         soup = extract_site(site="indeed", skill_name=skill_name, location=location, num_page=page)
-        job_cards_div = soup.find("div", attrs={"id": "mosaic-provider-jobcards"})
-        if job_cards_div:
-            jobs = job_cards_div.find_all("li", class_="css-5lfssm eu4oa1w0")
-            for job in jobs:
-                job_link_elem = job.find('a')
-                if job_link_elem:
-                    job_id = job_link_elem.get('data-jk')
-                    if not job_id:
-                        continue
+        if soup:
+            job_cards_div = soup.find("div", attrs={"id": "mosaic-provider-jobcards"})
+            if job_cards_div:
+                jobs = job_cards_div.find_all("div", class_="job_seen_beacon")
+                for job in jobs:
+                    job_id = job.get('data-jk')
                     job_title_elem = job.find("h2", class_="jobTitle")
                     job_title = job_title_elem.text.strip() if job_title_elem else "N/A"
-                    job_location_elem = job.find("div", class_="companyLocation")
-                    job_location = job_location_elem.text.strip() if job_location_elem else "N/A"
-                    job_link = f"https://ie.indeed.com/viewjob?jk={job_id}"
-                    options = Options()
-                    options.add_argument('--headless')
-                    options.add_argument(f"user-agent={HEADERS['User-Agent']}")
-                    driver = webdriver.Chrome(options=options)
-                    job_description, company_name = extract_job_description_and_company(driver, job_link)
+                    company_elem = job.find("span", class_="companyName")
+                    company_name = company_elem.text.strip() if company_elem else "N/A"
+                    job_description_elem = job.find("div", class_="job-snippet")
+                    job_description = job_description_elem.text.strip() if job_description_elem else "N/A"
                     job_data.append({
                         'Job ID': job_id,
                         'Job Title': job_title,
                         'Company': company_name,
                         'Description': job_description,
-                        'Link': job_link
                     })
+            else:
+                print("No job cards found on this page.")
         else:
-            print("No job cards found on this page.")
-    # if job_data:
-    #     try:
-    #         collection.insert_many(job_data, ordered=False)
-    #     except Exception as e:
-    #         print(f"Error inserting data into MongoDB: {e}")
+            print(f"Failed to retrieve page {page}")
     return job_data
 
 # Streamlit UI
@@ -237,7 +201,7 @@ st.sidebar.info("""
    - It will identify skill gaps and recommend additional skills needed to achieve targeted job roles.
 
 3. **Explainable AI:**
-   - Developed with best practices in explainable AI to ensure transparency and trust.
+   - Developed withbest practices in explainable AI to ensure transparency and trust. 
    - Provides clear explanations for its recommendations, allowing users to understand and evaluate their future career evolution and options.
 
 4. **Data-Driven Insights:**

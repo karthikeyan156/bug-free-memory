@@ -71,6 +71,7 @@ def extract_site(site: str, skill_name: str, location="Ireland", num_page=0) -> 
     return soup
 
 def scrape_jobs(skill_name, location, num_pages=1):
+    print("started job scrapping")
     job_data = []
     for page in range(num_pages):
         soup = extract_site(site="indeed", skill_name=skill_name, location=location, num_page=page)

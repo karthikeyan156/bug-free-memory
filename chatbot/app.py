@@ -77,6 +77,7 @@ def scrape_jobs(skill_name, location, num_pages=1):
         if soup:
             job_cards_div = soup.find("div", attrs={"id": "mosaic-provider-jobcards"})
             if job_cards_div:
+                print (job)
                 jobs = job_cards_div.find_all("div", class_="job_seen_beacon")
                 for job in jobs:
                     job_id = job.get('data-jk')

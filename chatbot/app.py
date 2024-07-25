@@ -10,10 +10,10 @@ import requests
 
 # Load environment variables
 load_dotenv()  # take environment variables from .env.
-
+Print("loading env")
 # Configure Google Generative AI
 genai.configure(api_key=os.getenv("GOOGLE_API_KEY"))
-
+Print("configiring env")
 # Function to convert text to Markdown format
 def to_markdown(text):
     text = text.replace('•', '  *')
@@ -31,6 +31,7 @@ def get_gemini_response(input, pdf_content=None, prompt=None):
 
 # Function to extract text from PDF
 def input_pdf_text(uploaded_file):
+    Print("converting pdf to text ")
     reader = pdf.PdfReader(uploaded_file)
     text = ""
     for page in range(len(reader.pages)):
@@ -135,11 +136,15 @@ with tab2:
     submit = st.button("Submit")
 
     if submit:
+        Print("request submitted")
         if uploaded_file is not None:
             text = input_pdf_text(uploaded_file)
             if scrape_skill and scrape_location:
+                Print("skill scraped")
                 with st.spinner("Finding jobs to match with your resume..."):
+                    Print("going to scrape")
                     job_data = scrape_jobs(skill_name=scrape_skill, location=scrape_location)
+                    Print("scraped ")
                     job_descriptions = "\n\n".join([job['Description'] for job in job_data])
                     response = get_gemini_response(input_prompt.format(text=text, jd=job_descriptions))
                     st.subheader("The response is")

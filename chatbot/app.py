@@ -9,7 +9,7 @@ from bs4 import BeautifulSoup
 import requests
 
 # Load environment variables
-load_dotenv()
+load_dotenv()  # take environment variables from .env.
 
 # Configure Google Generative AI
 genai.configure(api_key=os.getenv("GOOGLE_API_KEY"))
@@ -62,39 +62,40 @@ URLS = {
 }
 
 def extract_site(site: str, skill_name: str, location="Ireland", num_page=0) -> BeautifulSoup:
-    url = ""
-    if site == "indeed":
-        url = (
-            URLS[site]
-            + f"/jobs?q={skill_name.replace(' ', '+')}&l={location}&start={num_page * 10}"
-        )
+    url = f"{URLS[site]}/jobs?q={skill_name.replace(' ', '+')}&l={location}&start={num_page * 10}"
     response = requests.get(url, headers=HEADERS)
-    soup = BeautifulSoup(response.content, "html.parser")
+    if response.status_code == 200:
+        soup = BeautifulSoup(response.content, "html.parser")
+    else:
+        soup = None
     return soup
 
 def scrape_jobs(skill_name, location, num_pages=1):
     job_data = []
     for page in range(num_pages):
         soup = extract_site(site="indeed", skill_name=skill_name, location=location, num_page=page)
-        job_cards_div = soup.find("div", attrs={"id": "mosaic-provider-jobcards"})
-        if job_cards_div:
-            jobs = job_cards_div.find_all("div", class_="job_seen_beacon")
-            for job in jobs:
-                job_id = job.get('data-jk')
-                job_title_elem = job.find("h2", class_="jobTitle")
-                job_title = job_title_elem.text.strip() if job_title_elem else "N/A"
-                company_elem = job.find("span", class_="companyName")
-                company_name = company_elem.text.strip() if company_elem else "N/A"
-                job_description_elem = job.find("div", class_="job-snippet")
-                job_description = job_description_elem.text.strip() if job_description_elem else "N/A"
-                job_data.append({
-                    'Job ID': job_id,
-                    'Job Title': job_title,
-                    'Company': company_name,
-                    'Description': job_description,
-                })
+        if soup:
+            job_cards_div = soup.find("div", attrs={"id": "mosaic-provider-jobcards"})
+            if job_cards_div:
+                jobs = job_cards_div.find_all("div", class_="job_seen_beacon")
+                for job in jobs:
+                    job_id = job.get('data-jk')
+                    job_title_elem = job.find("h2", class_="jobTitle")
+                    job_title = job_title_elem.text.strip() if job_title_elem else "N/A"
+                    company_elem = job.find("span", class_="companyName")
+                    company_name = company_elem.text.strip() if company_elem else "N/A"
+                    job_description_elem = job.find("div", class_="job-snippet")
+                    job_description = job_description_elem.text.strip() if job_description_elem else "N/A"
+                    job_data.append({
+                        'Job ID': job_id,
+                        'Job Title': job_title,
+                        'Company': company_name,
+                        'Description': job_description,
+                    })
+            else:
+                print("No job cards found on this page.")
         else:
-            print("No job cards found on this page.")
+            print(f"Failed to retrieve page {page}")
     return job_data
 
 # Streamlit UI
